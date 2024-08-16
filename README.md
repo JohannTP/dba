@@ -18,6 +18,7 @@ https://www.youtube.com/watch?v=u1HWG1YMFKA
 https://learn.microsoft.com/es-es/sql/t-sql/lesson-1-creating-database-objects?view=sql-server-ver16
 
 
+
 /*DROP TABLE RolesSubModulos
 DROP TABLE SubModulos
 DROP TABLE Aplicaciones
@@ -211,7 +212,11 @@ ON A.Id = M.AplicacionId
 SELECT M.Nombre, RM.Id  FROM Modulos M
 JOIN RolesModulos RM
 ON M.Id = RM.ModuloId
-WHERE RM.RolId = 1
+WHERE RM.RolId = 1 
+
+
+
+
 
 --APLICACION ROL Y MODULO
 SELECT A.Nombre APLICACION, R.Nombre ROL, M.Nombre FROM UsuariosAplicacionesRoles UAR
@@ -226,7 +231,8 @@ WHERE UAR.UsuarioId = 1
 
 -- APLICACION ROL MODULO Y SUBMODULO
 
-SELECT A.Nombre APLICACION, R.Nombre ROL, R.Id RolId, M.Nombre MODULO, M.Id ,SM.Descripcion SUBMODULOS, SM.ModuloId, RSM.RolId FROM UsuariosAplicacionesRoles UAR
+SELECT A.Nombre APLICACION, R.Nombre ROL, R.Id RolId, M.Nombre MODULO, M.Id ,SM.Descripcion SUBMODULOS, SM.ModuloId, RSM.RolId 
+FROM UsuariosAplicacionesRoles UAR
 JOIN Aplicaciones A
 ON UAR.AplicacionId = A.Id
 --JOIN RolesAplicaciones RA ON A.Id = RA.AplicacionId
@@ -237,17 +243,87 @@ ON R.Id = RM.RolId
 JOIN Modulos M ON RM.ModuloId = M.Id AND A.Id = M.AplicacionId
 LEFT JOIN RolesSubModulos RSM ON R.Id = RSM.RolId AND M.Id = (SELECT ModuloId FROM SubModulos WHERE Id = RSM.SubModuloId) 
 LEFT JOIN SubModulos SM ON RSM.SubModuloId = SM.Id AND M.Id = SM.ModuloId
-WHERE UAR.UsuarioId = 6 AND A.Id = 1
+WHERE UAR.UsuarioId = 1 AND A.Id = 1
+
+select * from SubModulos
+
+select * from RolesSubModulos
+
+-- ****************************
+GO
+ALTER PROCEDURE uspUsuariosSelect
+	@pEmail VARCHAR(50),
+	@pAplicacionId INT
+AS
+BEGIN
+	SELECT U.Id, U.Email 
+	FROM Usuarios U
+	JOIN UsuariosAplicacionesRoles UAR ON U.Id = UAR.UsuarioId
+	JOIN Aplicaciones A ON UAR.AplicacionId = A.Id
+	WHERE U.Email = @pEmail AND A.Id = @pAplicacionId
+END 
+
+GO
+CREATE PROCEDURE uspAplicacionesSelect
+	@pEmail VARCHAR(50),
+	@pAplicacionId INT
+AS
+BEGIN
+	SELECT A.Id, A.Nombre 
+	FROM Aplicaciones A
+	JOIN UsuariosAplicacionesRoles UAR ON A.Id = UAR.AplicacionId
+	JOIN Usuarios U ON UAR.UsuarioId = U.Id
+	WHERE U.Email = @pEmail AND A.Id = @pAplicacionId
+
+END 
+
+ALTER PROCEDURE uspRolesSelect
+	@pUsuarioId INT,
+	@pAplicacionId INT
+AS
+BEGIN
+	SELECT R.Id, R.Nombre FROM UsuariosAplicacionesRoles UAR
+	JOIN Roles R ON UAR.RolId = R.Id
+	WHERE UAR.Id = @pUsuarioId AND UAR.AplicacionId = @pAplicacionId
+END
+
+
+
+SELECT M.Id, M.Nombre, M.Ruta FROM UsuariosAplicacionesRoles UAR
+JOIN Roles R 
+ON UAR.RolId = R.Id
+JOIN RolesModulos RM
+ON R.Id = RM.RolId
+JOIN Modulos M 
+ON RM.ModuloId = M.Id
+WHERE UAR.AplicacionId = 2 AND R.Id = 1 AND UAR.UsuarioId = 1
+
+
+SELECT R.Id, R.Nombre FROM UsuariosAplicacionesRoles UAR
+JOIN Roles R 
+ON UAR.RolId = R.Id WHERE R.Id = 1 AND UAR.Id = 1
+
+
+ALTER PROCEDURE uspModulosSelect
+	@pUsuarioId INT,
+	@pRolId INT,
+	@pAplicacionId INT
+AS
+BEGIN
+	SELECT DISTINCT M.Id, M.Nombre, M.Ruta FROM UsuariosAplicacionesRoles UAR
+	JOIN Roles R ON UAR.RolId = R.Id
+	JOIN RolesModulos RM ON R.Id = RM.RolId
+	JOIN Modulos M ON RM.ModuloId = M.Id AND UAR.AplicacionId = M.AplicacionId
+	WHERE UAR.AplicacionId = @pAplicacionId AND UAR.RolId = @pRolId AND UAR.UsuarioId = @pUsuarioId
+END
 
 
 
 
 
-
-
-
-
-
+EXEC uspUsuariosSelect @pEmail = 'jose.flores.@touring.pe', @pAplicacion = 1
+EXEC uspAplicacionesSelect @pEmail = 'jose.flores.@touring.pe', @pAplicacionId = 1
+EXEC uspRolesSelect @pUsuarioId = 5, @pAplicacionId = 1;
 
 
 
