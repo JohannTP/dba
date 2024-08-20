@@ -373,3 +373,28 @@ LEFT JOIN Modulos M ON RM.ModuloId = M.Id
 LEFT JOIN RolesSubModulos RSM ON R.Id = RSM.RolId
 LEFT JOIN SubModulos SM ON RSM.SubModuloId = SM.Id AND SM.ModuloId = M.Id
 WHERE UAR.UsuarioId = 1
+
+https://www.youtube.com/watch?app=desktop&v=6SzdO8CiKDQ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
