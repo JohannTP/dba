@@ -51,7 +51,56 @@ https://learn.microsoft.com/es-es/sql/t-sql/lesson-1-creating-database-objects?v
 
 
 
+-------------------------------------------------------
+APP_STAR()
 
+//protected void Application_BeginRequest(object sender, EventArgs e)
+        //{
+        //    ValidarPermisos(sender, e);
+        //}
+
+        protected void ValidarPermisos(object sender, EventArgs e)
+        {
+
+            if (HttpContext.Current.Session == null || HttpContext.Current.Session["OpcionesNivelUno"] == null)
+            {
+                // Redirige a la página de no autorizado si la sesión no está disponible
+                HttpContext.Current.Response.Redirect("~/Login/NoAutorizado");
+                return;
+            }
+
+
+            //obtener url solicitada
+            var requestUrl = HttpContext.Current.Request.Url.AbsolutePath;
+
+
+            //excluir ciertas rutas de la validacion
+            if (requestUrl.Equals("/Login", StringComparison.OrdinalIgnoreCase) ||
+                requestUrl.Equals("/Login/IniciarSesion", StringComparison.OrdinalIgnoreCase) ||
+                requestUrl.Equals("/", StringComparison.OrdinalIgnoreCase) ||
+                requestUrl.Equals("/Login/Index", StringComparison.OrdinalIgnoreCase) ||
+                requestUrl.Equals("/Login/NoAutorizado", StringComparison.OrdinalIgnoreCase) ||
+                requestUrl.StartsWith("/Content", StringComparison.OrdinalIgnoreCase) ||
+                requestUrl.StartsWith("/Scripts", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            HttpContext context = HttpContext.Current;
+            var opcionesNivelUno = context.Session["OpcionesNivelUno"] as List<OpcionesDTO>;
+            var opcionesNivelDos = context.Session["OpcionesNivelDos"] as List<OpcionesDTO>;
+            var opcionesNivelTres = context.Session["OpcionesNivelTres"] as List<OpcionesDTO>;
+
+            //combinar la lista de permisos del usuario
+            var opciones = opcionesNivelUno.Concat(opcionesNivelDos).Concat(opcionesNivelTres).ToList();
+
+            bool accesoPermitido = opciones.Any(o => requestUrl.StartsWith(o.Ruta, StringComparison.OrdinalIgnoreCase));
+
+            if (!accesoPermitido)
+            {
+                HttpContext.Current.Response.Redirect("~/Login/NoAutorizado");
+            }
+        }
 
 
 
